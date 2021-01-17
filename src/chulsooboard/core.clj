@@ -4,6 +4,7 @@
             [java-time :as time]
             [progrock.core :as pr]
             [clojure.tools.namespace.repl :refer [refresh]]
+            [clojure.tools.trace :as trace]
             [clojure.repl :refer :all])
   (:gen-class))
 
@@ -20,7 +21,28 @@
     [ymdt-string table]))
 
 
-;; http://miniweb.imbc.com/Music/View?seqID=300&progCode=RAMFM300 가 이상하다
+(defn refine-map [filtered-table-map]
+  (let [type_ (:class (:attrs filtered-table-map))
+        content (:content filtered-table-map)]
+    (if (= type_ "singer")
+      {:singer (first content)}
+      {:title (first content)})))
+
+
+(defn get-table [html-doc]
+  (let [raw (->> html-doc
+                 (#(html/select % [:tr :td]))
+                 (map :content)
+                 (filter (comp not string-singleton?))
+                 (filter (comp not nil?))
+                 (map first)
+                 (map refine-map))
+        singers (take-nth 2 raw)
+        titles (take-nth 2 (rest raw))
+        zipped (map list singers titles)]
+    (reduce (fn [acc elem]
+              (let [[singer-map title-map] elem]
+                (conj acc (merge singer-map title-map)))) zipped)))
 
 
 (defn scrape-upto-number [number]
