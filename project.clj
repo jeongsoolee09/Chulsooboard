@@ -8,7 +8,8 @@
                  [enlive "1.1.6"]
                  [progrock "0.1.2"]
                  [clojure.java-time "0.3.2"]
-                 [org.clojure/tools.trace "0.7.10"]]
+                 [org.clojure/tools.trace "0.7.10"]
+                 [seancorfield/next.jdbc "1.1.613"]]
   :main ^:skip-aot chulsooboard.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all
