@@ -10,15 +10,8 @@
 
 
 (defn string-singleton? [entry]
-  (string? (first entry)))
-
-
-(defn scrape-chulsoo-by-number [number]
-  (let [url (str/join ["http://miniweb.imbc.com/Music/View?seqID=" number "&progCode=RAMFM300"])
-        html-doc (html/html-resource (java.net.URL. url))
-        ymdt-string (first (:content (nth (html/select sample [:body :div :div :div :div :p]) 0)))
-        table (get-table html-doc)]
-    [ymdt-string table]))
+  (and (= (count entry) 1)
+       (string? (first entry))))
 
 
 (defn refine-map [filtered-table-map]
@@ -42,22 +35,73 @@
         zipped (map list singers titles)]
     (reduce (fn [acc elem]
               (let [[singer-map title-map] elem]
-                (conj acc (merge singer-map title-map)))) zipped)))
+                (conj acc (merge singer-map title-map)))) [] zipped)))
+
+
+;; (defn convert-HTML-special-characters
+;;   "")
+
+
+(defn normalize-string
+  "strip away the extra trailing whitespace,
+   and deal with HTML special characters"
+  [string]
+  (-> string
+      (str/trim)
+      (convert-HTML-special-characters)))
+
+
+(defn parse-only-integer
+  "\"2007년\" |-> 2007"
+  [string-with-numbers]
+  (if-let [matches (take-while
+                    #(re-matches #"[0-9]+" (str %))
+                    string-with-numbers)]
+    (Integer/parseInt (apply str matches))))
+
+
+(defn ymd-list-to-hashmap
+  "(2007 8 27) |->
+    {:year 2007 :month 8 :day 27}"
+  [ymd-list]
+  (let [labels '(:year :month :day)
+        zipped (map list labels ymd-list)]
+    (apply hash-map (flatten zipped))))
+
+
+(defn parse-date-string
+  "Parse the date string,
+   e.g. 2007년 8월 27일 월요일 |->
+        {:year 2007 :month 8 :day 27}"
+  [date-string]
+  (->> date-string
+       (#(str/split % #" "))
+       (take 3)
+       (map parse-only-integer)
+       (ymd-list-to-hashmap)))
+
+
+(defn scrape-chulsoo-by-number [number]
+  (let [url (str/join ["http://miniweb.imbc.com/Music/View?seqID=" number "&progCode=RAMFM300"])
+        html-doc (html/html-resource (java.net.URL. url))
+        ymdt-string (first (:content (nth (html/select html-doc [:body :div :div :div :div :p]) 0)))
+        table (get-table html-doc)]
+    [(parse-date-string ymdt-string) table]))
 
 
 (defn scrape-upto-number [number]
   (loop [cnt 1 acc []]
-      (let [scraped (try (scrape-chulsoo-by-number cnt)
-                         (catch Exception e nil))] ; In this case, the URL invalid
-        (if (= cnt number)
-          acc
-          (if scraped
-            (do
-              (println cnt)
-              (recur (inc cnt) (conj acc scraped)))
-            (do
-              (println cnt)
-              (recur (inc cnt) acc)))))))
+    (let [scraped (try (scrape-chulsoo-by-number cnt)
+                       (catch Exception e nil))] ; In this case, the URL invalid
+      (if (= cnt number)
+        acc
+        (if scraped
+          (do
+            (println cnt)
+            (recur (inc cnt) (conj acc scraped)))
+          (do
+            (println cnt)
+            (recur (inc cnt) acc)))))))
 
 
 (defn day->seqID
