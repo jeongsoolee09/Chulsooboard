@@ -1,4 +1,4 @@
-;; namespace for scraping
+;;; namespace for scraping
 
 (ns chulsooboard.scrape
   (:require [net.cgrand.enlive-html :as html]
@@ -85,37 +85,30 @@
 
 
 (defn scrape-chulsoo-by-number [number]
-  (let [url (str/join ["http://miniweb.imbc.com/Music/View?seqID=" number "&progCode=RAMFM300"])
+  (let [url (str/join
+             ["http://miniweb.imbc.com/Music/View?seqID="
+              number
+              "&progCode=RAMFM300"])
         html-doc (html/html-resource (java.net.URL. url))
-        ymdt-string (-> (html/select html-doc [:body :div :div :div :div :p])
+        ymdt-string (-> (html/select html-doc
+                                     [:body :div :div :div :div :p])
                         (nth 0)
                         (:content)
                         (first))
-        table (get-table html-doc)]
-    [(parse-date-string ymdt-string) table]))
+        table (get-table html-doc)
+        ymdt-map (parse-date-string ymdt-string)]
+    (map #(merge % ymdt-map) table)))
 
 
 (defn scrape-upto-number [number]
-  (loop [cnt 1 acc []]
-    (let [scraped (try (scrape-chulsoo-by-number cnt)
-                       (catch Exception e nil))] ; In this case, the URL invalid
-      (if (= cnt number)
-        acc
+  (loop [cnt number acc '()]
+    (if (< cnt 0)
+      acc
+      (let [scraped (try (scrape-chulsoo-by-number cnt)
+                         (catch Exception e nil))] ; Maybe the URL is invalid
         (if scraped
-          (do
-            (println cnt)
-            (recur (inc cnt) (conj acc scraped)))
-          (do
-            (println cnt)
-            (recur (inc cnt) acc)))))))
+          (recur (dec cnt) (concat scraped acc))
+          (recur (dec cnt) acc))))))
 
 
-;;
-
-
-(defn day->seqID
-  "Get today's seqID for the URL."
-  []
-  (let [first-day-of-2021 5390
-        now (time/local-date)
-        ]))
+(scrape-upto-number 0)
