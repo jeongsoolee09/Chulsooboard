@@ -16,9 +16,33 @@
        (string? (first entry))))
 
 
+(defn convert-HTML-special-characters [string]
+  (str/escape string {"&lt;" \<
+                      "&gt;" \>
+                      "&amp;" \&}))
+
+(defn escape-quotes
+  [string]
+  (str/escape string {\" "\\\""
+                      \' "''"}))
+
+
+(defn normalize-string
+  "strip away the extra trailing whitespace,
+   and deal with HTML special characters"
+  [string]
+  (-> string
+      (str/trim)
+      (convert-HTML-special-characters)
+      (escape-quotes)))
+
+
+
 (defn refine-map [filtered-table-map]
   (let [type_ (:class (:attrs filtered-table-map))
-        content (:content filtered-table-map)]
+        content (->> filtered-table-map
+                    (:content)
+                    (map normalize-string))]
     (if (= type_ "singer")
       {:singer (first content)}
       {:title (first content)})))
@@ -38,20 +62,6 @@
     (reduce (fn [acc elem]
               (let [[singer-map title-map] elem]
                 (conj acc (merge singer-map title-map)))) [] zipped)))
-
-
-(defn convert-HTML-special-characters
-  ""
-  [])
-
-
-(defn normalize-string
-  "strip away the extra trailing whitespace,
-   and deal with HTML special characters"
-  [string]
-  (-> string
-      (str/trim)
-      (convert-HTML-special-characters)))
 
 
 (defn parse-only-integer
@@ -110,5 +120,3 @@
           (recur (dec cnt) (concat scraped acc))
           (recur (dec cnt) acc))))))
 
-
-(scrape-upto-number 0)

@@ -2,7 +2,10 @@
 
 (ns chulsooboard.db
   (:require [next.jdbc :as jdbc]
-            [chulsooboard.scrape :as scrape])
+            [chulsooboard.scrape :as scrape]
+            [clojure.tools.namespace.repl :refer [refresh]]
+            [clojure.tools.trace :as trace]
+            [clojure.repl :refer :all])
   (:gen-class))
 
 
@@ -34,10 +37,9 @@
             day (:day record)
             singer (:singer record)
             title (:title record)]
-        (do
           (insert-song datasource
                        year month day singer title)
-          (recur (rest remaining)))))))
+          (recur (rest remaining))))))
 
 
 ;; chulsoo never plays the same song twice
@@ -55,6 +57,8 @@
 (defn save-all-songs []
   (let [first-of-2021 5390
         scraped (scrape/scrape-upto-number 1)]
-    (do
       (create-songboard-if-needed)
-      (batch-insert-song datasource scraped))))
+      (batch-insert-song datasource scraped)))
+
+
+(save-all-songs)
