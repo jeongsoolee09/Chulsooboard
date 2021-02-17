@@ -9,7 +9,10 @@
                  [progrock "0.1.2"]
                  [clojure.java-time "0.3.2"]
                  [org.clojure/tools.trace "0.7.10"]
-                 [seancorfield/next.jdbc "1.1.613"]]
+                 [seancorfield/next.jdbc "1.1.613"]
+                 [compojure "1.6.2"]
+                 [ring/ring-jetty-adapter "1.4.0"]
+                 [hiccup "1.0.5"]]
   :resource-paths ["resources/postgresql-42.2.18.jar"]
   :main ^:skip-aot chulsooboard.core
   :target-path "target/%s"
