@@ -19,9 +19,9 @@
   (let [insert-command (str "insert into songboard"
                             " (year, month, day, singer, title) "
                             "values ("
-                                year ", "
-                                month ", "
-                                day ", "
+                            year ", "
+                            month ", "
+                            day ", "
                             "'" singer "'" ", "
                             "'" title "'" ")")]
     (jdbc/execute! datasource [insert-command])))
@@ -37,9 +37,9 @@
             day (:day record)
             singer (:singer record)
             title (:title record)]
-          (insert-song datasource
-                       year month day singer title)
-          (recur (rest remaining))))))
+        (insert-song datasource
+                     year month day singer title)
+        (recur (rest remaining))))))
 
 
 ;; chulsoo never plays the same song twice
@@ -49,16 +49,17 @@
                    (year int,
                     month int,
                     day int,
-                    singer varchar(32),
-                    title varchar(255),
-                    primary key (year, month, day, title))"]))
+                    singer varchar(255),
+                    title varchar(255))"]))
 
 
 (defn save-all-songs []
   (let [first-of-2021 5390
-        scraped (scrape/scrape-upto-number 1)]
-      (create-songboard-if-needed)
-      (batch-insert-song datasource scraped)))
+        scraped (scrape/scrape-upto-number first-of-2021)]
+    (create-songboard-if-needed)
+    (println "inserting into db...")
+    (batch-insert-song datasource scraped)
+    (println "inserting into db...done")))
 
 
 (save-all-songs)

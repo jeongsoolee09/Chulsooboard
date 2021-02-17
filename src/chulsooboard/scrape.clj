@@ -41,8 +41,8 @@
 (defn refine-map [filtered-table-map]
   (let [type_ (:class (:attrs filtered-table-map))
         content (->> filtered-table-map
-                    (:content)
-                    (map normalize-string))]
+                     (:content)
+                     (map normalize-string))]
     (if (= type_ "singer")
       {:singer (first content)}
       {:title (first content)})))
@@ -94,7 +94,7 @@
        (ymd-list-to-hashmap)))
 
 
-(defn scrape-chulsoo-by-number [number]
+(defn scrape-by-number [number]
   (let [url (str/join
              ["http://miniweb.imbc.com/Music/View?seqID="
               number
@@ -114,9 +114,13 @@
   (loop [cnt number acc '()]
     (if (< cnt 0)
       acc
-      (let [scraped (try (scrape-chulsoo-by-number cnt)
+      (let [scraped (try (scrape-by-number cnt)
                          (catch Exception e nil))] ; Maybe the URL is invalid
         (if scraped
-          (recur (dec cnt) (concat scraped acc))
+          (do
+            (println cnt)
+            (recur (dec cnt) (concat scraped acc)))
           (recur (dec cnt) acc))))))
 
+
+(scrape-by-number 5389)
