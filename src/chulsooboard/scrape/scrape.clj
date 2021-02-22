@@ -1,6 +1,6 @@
 ;;; namespace for scraping
 
-(ns chulsooboard.scrape
+(ns chulsooboard.scrape.scrape
   (:require [net.cgrand.enlive-html :as html]
             [clojure.string :as str]
             [java-time :as time]

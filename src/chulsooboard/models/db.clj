@@ -1,8 +1,9 @@
 ;;; namepsace for working with Postgres
 
-(ns chulsooboard.db
+(ns chulsooboard.models.db
   (:require [next.jdbc :as jdbc]
-            [chulsooboard.scrape :as scrape]
+            [next.jdbc.sql :as sql]
+            [chulsooboard.scrape.scrape :as scrape]
             [clojure.tools.namespace.repl :refer [refresh]]
             [clojure.tools.trace :as trace]
             [clojure.repl :refer :all])
@@ -42,7 +43,6 @@
         (recur (rest remaining))))))
 
 
-;; chulsoo never plays the same song twice
 (defn create-songboard-if-needed []
   (jdbc/execute! datasource
                  ["create table if not exists songboard
@@ -52,9 +52,8 @@
                     singer varchar(255),
                     title varchar(255))"]))
 
-
 (defn save-all-songs []
-  (let [first-of-2021 5390
+  (let [first-of-2021 5390              ; had to be hardcoded
         scraped (scrape/scrape-upto-number first-of-2021)]
     (create-songboard-if-needed)
     (println "inserting into db...")
@@ -62,4 +61,5 @@
     (println "inserting into db...done")))
 
 
-(save-all-songs)
+(defn find-by-title [title]
+  (sql/query datasource [(str "select * from songboard where title='" title "'")]))
