@@ -31,7 +31,14 @@ I am an avid listener of FM 91.9MHz, "Chulsoo's Music Camp". One day I woke up f
 아직 계획 상으로만 남아있는 것:
 
 1. 이쁜 CSS 입히기
-2. 날짜 별로 
+   - Tailwind CSS 사용?
+2. 날짜 별로
 3. 배캠차트 (가칭) 만들기
 
 당장의 마일스톤은 본 웹사이트를 만들어 Heroku에 deploy하는 것입니다.
+
+## News
+
+### 2022-05-23 19:01:59
+
+개발 재개!
